@@ -1,5 +1,31 @@
 class Speech < Announcement
   include Edition::Appointment
+  include Tire::Model::Search
+
+  tire.index_name 'whitehall_announcement_search'
+  mapping do
+    indexes :id,                    index: :not_analyzed
+    indexes :title,                 analyzer: 'snowball', boost: 4
+    indexes :summary,               analyzer: 'snowball', boost: 2
+    indexes :indexable_content,     analyzer: 'snowball'
+    indexes :state,                 analyzer: 'keyword'
+    indexes :timestamp_for_sorting, type: 'date'
+    indexes :first_published_at,    type: 'date'
+    indexes :organisations,         type: 'string',
+                                    analyzer: 'keyword',
+                                    as: 'organisations.map(&:id)'
+    indexes :topics,                type: 'string',
+                                    analyzer: 'keyword',
+                                    as: 'topics.map(&:id)'
+    indexes :people,                type: 'string',
+                                    analyzer: 'keyword',
+                                    as: proc {
+                                      [role_appointment.try(:person_id)]
+                                    }
+    indexes :delivered_on,          type: 'date'
+    indexes :speech_type,           type: 'integer',
+                                    as: 'speech_type.id'
+  end
 
   after_save :populate_organisations_based_on_role_appointment
 
@@ -9,6 +35,10 @@ class Speech < Announcement
 
   delegate :genus, :explanation, to: :speech_type
   validate :only_speeches_allowed_invalid_data_can_be_awaiting_type
+
+  def search_index
+    super.merge("speech_type" => speech_type_id)
+  end
 
   def speech_type
     SpeechType.find_by_id(speech_type_id)

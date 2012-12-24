@@ -13,6 +13,9 @@ require 'mocha'
 require 'slimmer/test'
 require 'factories'
 require 'webmock/test_unit'
+
+# WebMock.disable_net_connect!(allow: "localhost:9200")
+
 Dir[Rails.root.join('test/support/*.rb')].each { |f| require f }
 
 Mocha::Configuration.prevent(:stubbing_non_existent_method)
@@ -64,6 +67,14 @@ class ActiveSupport::TestCase
 
   def with_mainstream_content_api(content_api, &block)
     with_service(:mainstream_content_api, content_api, &block)
+  end
+
+  def routes_helper
+    Class.new do
+      include Rails.application.routes.url_helpers
+      include PublicDocumentRoutesHelper
+      include MainstreamCategoryRoutesHelper
+    end.new
   end
 
   class << self

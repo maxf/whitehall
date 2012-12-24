@@ -7,6 +7,25 @@ class Publication < Publicationesque
   include Edition::WorldLocations
   include Edition::DocumentSeries
   include Edition::StatisticalDataSets
+  include Tire::Model::Search
+
+  tire.index_name 'whitehall_publication_search'
+  mapping do
+    indexes :id,                    index: :not_analyzed
+    indexes :title,                 analyzer: 'snowball', boost: 4
+    indexes :summary,               analyzer: 'snowball', boost: 2
+    indexes :indexable_content,     analyzer: 'snowball'
+    indexes :state,                 analyzer: 'keyword'
+    indexes :timestamp_for_sorting, type: 'date'
+    indexes :first_published_at,    type: 'date'
+    indexes :organisations,         type: 'string',
+                                    analyzer: 'keyword',
+                                    as: 'organisations.map(&:id)'
+    indexes :topics,                type: 'string',
+                                    analyzer: 'keyword',
+                                    as: 'topics.map(&:id)'
+    indexes :publication_type_id,   type: 'integer'
+  end
 
   validates :publication_date, presence: true
   validates :publication_type_id, presence: true
@@ -24,6 +43,10 @@ class Publication < Publicationesque
 
   def display_type
     publication_type.singular_name
+  end
+
+  def search_index
+    super.merge({"publication_type" => publication_type_id})
   end
 
   def publication_type

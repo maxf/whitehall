@@ -1,5 +1,31 @@
 class PoliciesController < DocumentsController
   include CacheControlHelper
+  class PoliciesDecorator < SimpleDelegator
+    def search
+      __getobj__.published_policy_search.results
+    end
+    def documents
+      PublicationesquePresenter.decorate(__getobj__.published_policy_search.results)
+    end
+    def count
+      search.results.count
+    end
+    def current_page
+      search.current_page
+    end
+    def num_pages
+      search.total_pages
+    end
+    def total_count
+      search.total_entries
+    end
+    def last_page?
+      search.last_page?
+    end
+    def first_page?
+      search.first_page?
+    end
+  end
 
   before_filter :find_document, only: [:show, :activity]
   before_filter :set_analytics_format, only:[:show, :activity]
@@ -14,8 +40,9 @@ class PoliciesController < DocumentsController
 
     clean_malformed_params_array(:topics)
     clean_malformed_params_array(:departments)
-
-    @filter = Whitehall::DocumentFilter.new(policies, params)
+    
+    search = Whitehall::DocumentSearch.new(params)
+    @filter = PoliciesDecorator.new(search)
     respond_with PolicyFilterJsonPresenter.new(@filter)
   end
 
@@ -40,10 +67,6 @@ class PoliciesController < DocumentsController
   private
   def document_class
     Policy
-  end
-
-  def policies
-    Policy.published.includes(:document)
   end
 
   def analytics_format

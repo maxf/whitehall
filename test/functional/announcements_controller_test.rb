@@ -4,7 +4,6 @@ class AnnouncementsControllerTest < ActionController::TestCase
   include ActionView::Helpers::DateHelper
   include ActionDispatch::Routing::UrlFor
   include PublicDocumentRoutesHelper
-  include DocumentFilterHelpers
 
   should_be_a_public_facing_controller
   should_return_json_suitable_for_the_document_filter :news_article
@@ -153,9 +152,7 @@ class AnnouncementsControllerTest < ActionController::TestCase
     news = (1..3).map { |n| create(:published_news_article, first_published_at: n.days.ago) }
     speeches = (4..6).map { |n| create(:published_speech, delivered_on: n.days.ago) }
 
-    with_number_of_documents_per_page(4) do
-      get :index, page: 2
-    end
+    get :index, page: 2
 
     assert_documents_appear_in_order_within("#announcements-container", speeches[1..2])
     (news + speeches[0..0]).each do |speech|

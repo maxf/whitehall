@@ -22,10 +22,6 @@ class Whitehall::DocumentFilter
     apply_sort_direction!
   end
 
-  def all_topics
-    Topic.with_content.order(:name)
-  end
-
   def all_topics_with(type)
     case type
     when :publication

@@ -2,7 +2,7 @@ require 'test_helper'
 
 class AnnouncementFilterJsonPresenterTest < PresenterTestCase
   setup do
-    @filter = stub_everything("Whitehall::DocumentFilter",
+    @filter = stub_everything("Whitehall::DocumentSearch",
       count: 1,
       current_page: 1,
       num_pages: 1,

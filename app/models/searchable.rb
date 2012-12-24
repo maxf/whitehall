@@ -1,6 +1,13 @@
 module Searchable
   extend ActiveSupport::Concern
 
+  SEARCH_FIELDS = [
+    :id, :title, :link, :content,
+    :section, :subsection, :subsubsection,
+    :format, :boost_phrases, :description,
+    :organisations, :timestamp_for_sorting
+  ]
+
   included do
     class_attribute :searchable_options
   end
@@ -19,7 +26,7 @@ module Searchable
       self.searchable_options[:index_after] = [self.searchable_options[:index_after]].flatten.select { |e| e }
       self.searchable_options[:unindex_after] = [self.searchable_options[:unindex_after]].flatten.select { |e| e }
 
-      [:title, :link, :content, :section, :subsection, :subsubsection, :format, :only, :boost_phrases, :description].each do |name|
+      (SEARCH_FIELDS + [:only]).each do |name|
         value = searchable_options[name]
         searchable_options[name] =
           if value.respond_to?(:call)
@@ -51,7 +58,7 @@ module Searchable
     }
 
     def search_index
-      [:title, :link, :format, :content, :section, :subsection, :subsubsection, :boost_phrases, :description].inject({}) do |result, name|
+      SEARCH_FIELDS.inject({}) do |result, name|
         value = searchable_options[name].call(self)
         key = KEY_MAPPING[name] || name.to_s
         result[key] = value unless value.nil?
@@ -60,14 +67,14 @@ module Searchable
     end
 
     def update_in_search_index
-      Rummageable.index(search_index, index)
+      Rummageable.index(search_index, rummager_index)
     end
 
     def remove_from_search_index
-      Rummageable.delete(searchable_options[:link].call(self), index)
+      Rummageable.delete(searchable_options[:link].call(self), rummager_index)
     end
 
-    def index
+    def rummager_index
       is_a?(DetailedGuide) ? Whitehall.detailed_guidance_search_index_name : Whitehall.government_search_index_name
     end
 

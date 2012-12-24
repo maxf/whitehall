@@ -18,7 +18,7 @@ module Whitehall
     end
 
     PolicyPaper = create(id: 1, label: "Policy papers", publication_types: [PublicationType::PolicyPaper])
-    Consultation = create(id: 2, label: "Consultations", publication_types: [PublicationType::Consultation])
+    Consultation = create(id: 2, label: "Consultations", publication_types: [PublicationType::Consultation], edition_types: ["Consultation"])
     ImpactAssessment = create(id: 3, label: "Impact assessments", publication_types: [PublicationType::ImpactAssessment])
     Guidance = create(id: 4, label: "Guidance", publication_types: [PublicationType::Guidance])
     Form = create(id: 5, label: "Forms", publication_types: [PublicationType::Form])
