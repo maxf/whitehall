@@ -1,10 +1,10 @@
 class PublicationsController < DocumentsController
   class PublicationesqueDecorator < SimpleDelegator
     def search
-      __getobj__.published_publication_search.results
+      __getobj__.publication_search.results
     end
     def documents
-      PublicationesquePresenter.decorate(__getobj__.published_publication_search.results)
+      PublicationesquePresenter.decorate(__getobj__.publication_search.results)
     end
     def count
       search.results.count

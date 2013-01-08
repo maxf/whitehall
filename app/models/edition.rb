@@ -98,7 +98,7 @@ class Edition < ActiveRecord::Base
   end
 
   searchable(
-    id: -> d { d.id },
+    id: :id,
     title: :title,
     link: -> d { d.public_document_path(d) },
     format: -> d { d.format_name.gsub(" ", "_") },

@@ -5,7 +5,9 @@ module Searchable
     :id, :title, :link, :content,
     :section, :subsection, :subsubsection,
     :format, :boost_phrases, :description,
-    :organisations, :timestamp_for_sorting
+    :organisations, :timestamp_for_sorting,
+    :people, :publication_type, :speech_type,
+    :topics
   ]
 
   included do
@@ -75,7 +77,7 @@ module Searchable
     end
 
     def rummager_index
-      is_a?(DetailedGuide) ? Whitehall.detailed_guidance_search_index_name : Whitehall.government_search_index_name
+      is_a?(DetailedGuide) ? Whitehall.detailed_guidance_search_index_path : Whitehall.government_search_index_path
     end
 
     module ClassMethods

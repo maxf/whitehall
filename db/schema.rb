@@ -375,6 +375,7 @@ ActiveRecord::Schema.define(:version => 20130124132251) do
     t.boolean  "force_published"
     t.boolean  "minor_change",                                                    :default => false
     t.integer  "publication_type_id"
+    t.integer  "policy_team_id"
     t.string   "related_mainstream_content_url"
     t.string   "related_mainstream_content_title"
     t.string   "additional_related_mainstream_content_url"

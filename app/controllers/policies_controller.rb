@@ -2,10 +2,10 @@ class PoliciesController < DocumentsController
   include CacheControlHelper
   class PoliciesDecorator < SimpleDelegator
     def search
-      __getobj__.published_policy_search.results
+      __getobj__.policy_search.results
     end
     def documents
-      PublicationesquePresenter.decorate(__getobj__.published_policy_search.results)
+      PublicationesquePresenter.decorate(__getobj__.policy_search.results)
     end
     def count
       search.results.count
@@ -40,7 +40,7 @@ class PoliciesController < DocumentsController
 
     clean_malformed_params_array(:topics)
     clean_malformed_params_array(:departments)
-    
+
     search = Whitehall::DocumentSearch.new(params)
     @filter = PoliciesDecorator.new(search)
     respond_with PolicyFilterJsonPresenter.new(@filter)

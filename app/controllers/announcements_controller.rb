@@ -6,10 +6,10 @@ class AnnouncementsController < PublicFacingController
 
   class AnnouncementDecorator < SimpleDelegator
     def search
-      __getobj__.published_announcement_search.results
+      __getobj__.announcement_search.results
     end
     def documents
-      AnnouncementPresenter.decorate(__getobj__.published_announcement_search.results)
+      AnnouncementPresenter.decorate(__getobj__.announcement_search.results)
     end
     def count
       search.results.count

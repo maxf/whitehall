@@ -117,15 +117,23 @@ module Whitehall
       Rails.root.join('clean-uploads').realpath
     end
 
-    def government_search_index_name
-      '/government'
+    def elastic_search_url
+      Plek.current.find("search")
     end
 
-    def detailed_guidance_search_index_name
+    def government_search_index_name
+      "government"
+    end
+
+    def government_search_index_path
+      "/#{government_search_index_name}"
+    end
+
+    def detailed_guidance_search_index_path
       '/detailed'
     end
 
-    def mainstream_search_index_name
+    def mainstream_search_index_path
       '/mainstream'
     end
 
@@ -158,131 +166,6 @@ module Whitehall
 
     def analytics_format(format)
       ANALYTICS_FORMAT[format]
-    end
-
-    def create_es_index
-      Rails.logger.info "Rebuilding index for whitehall_announcement_search"
-      Tire.index 'whitehall_announcement_search' do
-        delete
-
-        create mappings: {
-          speech: {
-            properties: {
-              id:                     { type: 'string', index: 'not_analyzed' },
-              title:                  { type: 'string', boost: 4.0, analyzer: 'snowball'  },
-              summary:                { type: 'string', boost: 2.0, analyzer: 'snowball'  },
-              indexable_content:      { type: 'string', analyzer: 'snowball' },
-              state:                  { type: 'string', analyzer: 'keyword' },
-              timestamp_for_sorting:  { type: 'date' },
-              first_published_at:     { type: 'date' },
-              organisations:          { type: 'string', analyzer: 'keyword' },
-              topics:                 { type: 'string', analyzer: 'keyword' },
-              people:                 { type: 'string', analyzer: 'keyword' },
-              delivered_on:           { type: 'date' },
-              speech_type:            { type: 'integer' },
-            },
-          },
-          news_article: {
-            properties: {
-              id:                     { type: 'string', index: 'not_analyzed' },
-              title:                  { type: 'string', boost: 4.0, analyzer: 'snowball'  },
-              summary:                { type: 'string', boost: 2.0, analyzer: 'snowball'  },
-              indexable_content:      { type: 'string', analyzer: 'snowball' },
-              state:                  { type: 'string', analyzer: 'keyword' },
-              timestamp_for_sorting:  { type: 'date' },
-              first_published_at:     { type: 'date' },
-              organisations:          { type: 'string', analyzer: 'keyword' },
-              topics:                 { type: 'string', analyzer: 'keyword' },
-              people:                 { type: 'string', analyzer: 'keyword' },
-            },
-          },
-          fatality_notice: {
-            properties: {
-              id:                     { type: 'string', index: 'not_analyzed' },
-              title:                  { type: 'string', boost: 4.0, analyzer: 'snowball'  },
-              summary:                { type: 'string', boost: 2.0, analyzer: 'snowball'  },
-              indexable_content:      { type: 'string', analyzer: 'snowball' },
-              state:                  { type: 'string', analyzer: 'keyword' },
-              timestamp_for_sorting:  { type: 'date' },
-              first_published_at:     { type: 'date' },
-              organisations:          { type: 'string', analyzer: 'keyword' },
-              topics:                 { type: 'string', analyzer: 'keyword' },
-            }
-          }
-        }
-      end
-      Rails.logger.info Tire.index('whitehall_announcement_search').mapping
-
-      Rails.logger.info "Rebuilding index for whitehall_publication_search"
-      Tire.index 'whitehall_publication_search' do
-        delete
-
-        create mappings: {
-          publication: {
-            properties: {
-              id:                     { type: 'string', index: 'not_analyzed' },
-              title:                  { type: 'string', boost: 4.0, analyzer: 'snowball'  },
-              summary:                { type: 'string', boost: 2.0, analyzer: 'snowball'  },
-              indexable_content:      { type: 'string', analyzer: 'snowball' },
-              state:                  { type: 'string', analyzer: 'keyword' },
-              timestamp_for_sorting:  { type: 'date' },
-              first_published_at:     { type: 'date' },
-              organisations:          { type: 'string', analyzer: 'keyword' },
-              topics:                 { type: 'string', analyzer: 'keyword' },
-              publication_type_id:    { type: 'integer' },
-            }
-          },
-          consultation: {
-            properties: {
-              id:                     { type: 'string', index: 'not_analyzed' },
-              title:                  { type: 'string', boost: 4.0, analyzer: 'snowball'  },
-              summary:                { type: 'string', boost: 2.0, analyzer: 'snowball'  },
-              indexable_content:      { type: 'string', analyzer: 'snowball' },
-              state:                  { type: 'string', analyzer: 'keyword' },
-              timestamp_for_sorting:  { type: 'date' },
-              first_published_at:     { type: 'date' },
-              organisations:          { type: 'string', analyzer: 'keyword' },
-              topics:                 { type: 'string', analyzer: 'keyword' },
-            }
-          },
-          statistical_data_set: {
-            properties: {
-              id:                     { type: 'string', index: 'not_analyzed' },
-              title:                  { type: 'string', boost: 4.0, analyzer: 'snowball'  },
-              summary:                { type: 'string', boost: 2.0, analyzer: 'snowball'  },
-              indexable_content:      { type: 'string', analyzer: 'snowball' },
-              state:                  { type: 'string', analyzer: 'keyword' },
-              timestamp_for_sorting:  { type: 'date' },
-              first_published_at:     { type: 'date' },
-              organisations:          { type: 'string', analyzer: 'keyword' },
-              topics:                 { type: 'string', analyzer: 'keyword' },
-            }
-          }
-        }
-      end
-      Rails.logger.info Tire.index('whitehall_publication_search').mapping
-
-      Rails.logger.info "Rebuilding index for whitehall_policy_search"
-      Tire.index 'whitehall_policy_search' do
-        delete
-
-        create mappings: {
-          policy: {
-            properties: {
-              id:                     { type: 'string', index: 'not_analyzed' },
-              title:                  { type: 'string', boost: 4.0, analyzer: 'snowball'  },
-              summary:                { type: 'string', boost: 2.0, analyzer: 'snowball'  },
-              indexable_content:      { type: 'string', analyzer: 'snowball' },
-              state:                  { type: 'string', analyzer: 'keyword' },
-              timestamp_for_sorting:  { type: 'date' },
-              first_published_at:     { type: 'date' },
-              organisations:          { type: 'string', analyzer: 'keyword' },
-              topics:                 { type: 'string', analyzer: 'keyword' },
-            }
-          }
-        }
-      end
-      Rails.logger.info Tire.index('whitehall_policy_search').mapping
     end
 
     private

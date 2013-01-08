@@ -653,11 +653,9 @@ class PublicationsControllerTest < ActionController::TestCase
   end
 
   def given_two_documents_in_two_topics
-    @topic_1, @topic_2 = create(:topic), create(:topic)
-    policy_1 = create(:published_policy, topics: [@topic_1])
-    create(:published_publication, related_policies: [policy_1])
-    policy_2 = create(:published_policy, topics: [@topic_2])
-    create(:published_consultation, related_policies: [policy_2])
+    search_results = []
+    search = stub("whitehall document search", publication_search: stub("pub search", results: search_results))
+    Whitehall::DocumentSearch.stubs(:new).returns(search)
   end
 
   def create_publications_in(*topics)

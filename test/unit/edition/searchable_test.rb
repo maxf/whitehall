@@ -33,7 +33,7 @@ class Edition::SearchableTest < ActiveSupport::TestCase
   test "should add edition to search index on publishing" do
     edition = create(:submitted_edition)
 
-    Rummageable.expects(:index).with(has_entry("id", edition.id), Whitehall.government_search_index_name)
+    Rummageable.expects(:index).with(has_entry("id", edition.id), Whitehall.government_search_index_path)
 
     edition.publish_as(create(:departmental_editor))
   end
@@ -42,7 +42,7 @@ class Edition::SearchableTest < ActiveSupport::TestCase
     edition = create(:published_edition)
     slug = edition.document.slug
 
-    Rummageable.expects(:delete).with("/government/policies/#{slug}", Whitehall.government_search_index_name).never
+    Rummageable.expects(:delete).with("/government/policies/#{slug}", Whitehall.government_search_index_path).never
 
     new_edition = edition.create_draft(create(:policy_writer))
     new_edition.change_note = "change-note"
@@ -54,7 +54,7 @@ class Edition::SearchableTest < ActiveSupport::TestCase
     new_draft_edition = edition.create_draft(create(:policy_writer))
     slug = edition.document.slug
 
-    Rummageable.expects(:delete).with(routes_helper.public_document_path(edition), Whitehall.government_search_index_name).never
+    Rummageable.expects(:delete).with(routes_helper.public_document_path(edition), Whitehall.government_search_index_path).never
 
     new_draft_edition.delete!
   end
@@ -63,7 +63,7 @@ class Edition::SearchableTest < ActiveSupport::TestCase
     edition = create(:published_edition)
     slug = edition.document.slug
 
-    Rummageable.expects(:delete).with(routes_helper.public_document_path(edition), Whitehall.government_search_index_name)
+    Rummageable.expects(:delete).with(routes_helper.public_document_path(edition), Whitehall.government_search_index_path)
 
     edition.unpublish_as(create(:gds_editor))
   end
@@ -72,7 +72,7 @@ class Edition::SearchableTest < ActiveSupport::TestCase
     edition = create(:published_edition)
     slug = edition.document.slug
 
-    Rummageable.expects(:delete).with(routes_helper.public_document_path(edition), Whitehall.government_search_index_name)
+    Rummageable.expects(:delete).with(routes_helper.public_document_path(edition), Whitehall.government_search_index_path)
 
     edition.archive!
   end
