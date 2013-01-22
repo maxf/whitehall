@@ -18,6 +18,7 @@ class Whitehall::DocumentFilter
     filter_by_date!
     filter_by_publication_filter_option!
     filter_by_announcement_filter_option!
+    filter_by_people_option!
     paginate!
     apply_sort_direction!
   end
@@ -66,6 +67,14 @@ class Whitehall::DocumentFilter
 
   def selected_announcement_type_option
     Whitehall::AnnouncementFilterOption.find_by_slug(@params[:announcement_type_option])
+  end
+
+  def selected_people_option
+    if @params[:people] && @params[:people].include?("all")
+      nil
+    else
+      @params[:people]
+    end
   end
 
   def keywords
@@ -145,6 +154,15 @@ private
       elsif selected_announcement_type_option.news_article_types.present?
         @documents = @documents.where(@documents.arel_table[:news_article_type_id].in(selected_announcement_type_option.news_article_types.map(&:id)))
       end
+    end
+  end
+
+  def filter_by_people_option!
+    if selected_people_option
+      role_appointment_ids = RoleAppointment.where(person_id: selected_people_option).map(&:id)
+      @documents = @documents.where(
+        @documents.arel_table[:role_appointment_id].in(role_appointment_ids)
+      )
     end
   end
 

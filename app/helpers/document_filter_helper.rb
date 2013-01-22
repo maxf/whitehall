@@ -18,4 +18,10 @@ module DocumentFilterHelper
     selected_value = selected_announcement_filter_options ? selected_announcement_filter_options.slug : "all"
     options_for_select([["All announcement types", "all"]] + announcement_filter_options.map { |a| [a.label, a.slug] }, [selected_value])
   end
+
+  def people_filter_options(people, selected_person = nil)
+    selected_value = selected_person ? selected_person : ["all"]
+    options_for_select([["All ministers", "all"]] + people.map{ |a| [a.name, a.id] }, selected_value)
+  end
+
 end

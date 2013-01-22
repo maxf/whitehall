@@ -46,6 +46,15 @@
         </div>
       </div>
 
+      <% if true || defined?(filter_by_people) && filter_by_people %>
+        <div class="filter">
+          <div class="filter-inner">
+            <%= label_tag "people", "By minister", class: "title" %>
+            <%= select_tag :people, people_filter_options(Person.all, @filter.selected_people_option), size: 5, multiple: true, class: 'multi-row-select'  %>
+         </div>
+       </div>
+      <% end %>
+
       <% if defined?(filter_by_date) and filter_by_date %>
         <div class="filter">
           <div class="filter-inner">
