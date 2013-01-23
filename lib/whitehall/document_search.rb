@@ -35,7 +35,7 @@ class Whitehall::DocumentSearch
     end
   end
 
-  def filter_by_format(search)
+  def filter_by_format(search, format)
     if @format.present?
       search.filter :term, format: @format
     end
@@ -43,16 +43,15 @@ class Whitehall::DocumentSearch
 
 
   def filter_by_announcement_type(search)
-    case @announcement_type
-    when "speech"
-      speech_ids = [SpeechType::Transcript, SpeechType::DraftText, SpeechType::SpeakingNotes].map(&:id)
-      search.filter :term, speech_type: speech_ids
-    when "statement"
-      statement_ids = [SpeechType::WrittenStatement, SpeechType::OralStatement].map(&:id)
-      search.filter :term, speech_type: statement_ids
-    when "fatality_notice"
-      @format = 'fatality_notice'
-      filter_by_format(search)
+    if selected_announcement_type_option
+      if selected_announcement_type_option.speech_types.present?
+        search.filter :term, speech_type: selected_announcement_type_option.speech_types.map(&:id)
+      elsif selected_announcement_type_option.news_article_types.present?
+        search.filter :term, news_article_type: selected_announcement_type_option.news_article_types.map(&:id)
+      end
+      # search.filter :or, selected_announcement_type_option.edition_types.map do |t|
+      #   {term: {format: t}}
+      # end
     else
       search.filter :or, [{term: {format: "speech"}}, {term: {format: "news_article"}}, {term: {format: "fatality_notice"}}]
     end
@@ -63,7 +62,7 @@ class Whitehall::DocumentSearch
       publication_ids = selected_publication_filter_option.publication_types.map(&:id)
       if selected_publication_filter_option.edition_types.any?
         edition_types = selected_publication_filter_option.edition_types
-        format = edition_types.first.underscore #TODO: refactor so only one type is selected
+        format = edition_types.first.underscore #TODO: refactor you can pass multiple types
         search.filter :or, [{term: {format: format}}, {term: {publication_type: publication_ids}}]
       else
         search.filter :term, publication_type: publication_ids
@@ -123,8 +122,7 @@ class Whitehall::DocumentSearch
   def policy_search
     @results ||= Tire.search Whitehall.government_search_index_name, load: {include: [:document, :organisations]} do |search|
       keyword_search(search)
-      @format = "policy"
-      filter_by_format(search)
+      filter_by_format(search, "policy")
       filter_topics(search)
       filter_organisations(search)
       filter_date_and_sort(search)
@@ -146,7 +144,7 @@ class Whitehall::DocumentSearch
   end
 
   def selected_announcement_type_option
-    @announcement_type
+    Whitehall::AnnouncementFilterOption.find_by_slug(@params[:announcement_type_option])
   end
 
   def selected_people_option

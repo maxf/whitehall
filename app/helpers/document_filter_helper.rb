@@ -46,6 +46,6 @@ module DocumentFilterHelper
   end
 
   def announcement_types_for_filter
-    ["news_article", "speech", "statement", "fatality_notice"]
+    Whitehall::AnnouncementFilterOption.all
   end
 end

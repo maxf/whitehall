@@ -111,6 +111,7 @@ class Edition < ActiveRecord::Base
     people: nil,
     publication_type: nil,
     speech_type: nil,
+    news_article_type: nil,
     public_timestamp: :public_timestamp,
     topics: nil,
     only: :published,
