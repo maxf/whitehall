@@ -5,7 +5,7 @@ module Searchable
     :id, :title, :link, :content,
     :section, :subsection, :subsubsection,
     :format, :boost_phrases, :description,
-    :organisations, :timestamp_for_sorting,
+    :organisations, :public_timestamp,
     :people, :publication_type, :speech_type,
     :topics
   ]

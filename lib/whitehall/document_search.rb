@@ -83,11 +83,11 @@ class Whitehall::DocumentSearch
     if @date.present? && @direction.present?
       case @direction
       when "before"
-        search.filter :range, timestamp_for_sorting: {to: @date - 1.day}
-        search.sort { by :timestamp_for_sorting, :desc }
+        search.filter :range, public_timestamp: {to: @date - 1.day}
+        search.sort { by :public_timestamp, :desc }
       when "after"
-        search.filter :range, timestamp_for_sorting: {from: @date }
-        search.sort { by :timestamp_for_sorting}
+        search.filter :range, public_timestamp: {from: @date }
+        search.sort { by :public_timestamp}
       end
     end
   end

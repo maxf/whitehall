@@ -111,7 +111,7 @@ class Edition < ActiveRecord::Base
     people: nil,
     publication_type: nil,
     speech_type: nil,
-    timestamp_for_sorting: :timestamp_for_sorting,
+    public_timestamp: :public_timestamp,
     topics: nil,
     only: :published,
     index_after: [],
