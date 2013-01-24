@@ -8,8 +8,6 @@ class Whitehall::DocumentSearch
     @direction = params[:direction]
     @date = parse_date(@params[:date]) if @params[:date].present?
     @keywords = params[:keywords]
-
-    @announcement_type = params[:announcement_type]
     @people_ids = @params[:people_id]
   end
 
@@ -35,23 +33,15 @@ class Whitehall::DocumentSearch
     end
   end
 
-  def filter_by_format(search, format)
-    if @format.present?
-      search.filter :term, format: @format
-    end
-  end
-
 
   def filter_by_announcement_type(search)
     if selected_announcement_type_option
       if selected_announcement_type_option.speech_types.present?
-        search.filter :term, speech_type: selected_announcement_type_option.speech_types.map(&:id)
+        search.filter :term, {speech_type: selected_announcement_type_option.speech_types.map(&:id)}
       elsif selected_announcement_type_option.news_article_types.present?
-        search.filter :term, news_article_type: selected_announcement_type_option.news_article_types.map(&:id)
+        search.filter :term, {news_article_type: selected_announcement_type_option.news_article_types.map(&:id)}
       end
-      # search.filter :or, selected_announcement_type_option.edition_types.map do |t|
-      #   {term: {format: t}}
-      # end
+      search.filter :term, format: selected_announcement_type_option.edition_types
     else
       search.filter :or, [{term: {format: "speech"}}, {term: {format: "news_article"}}, {term: {format: "fatality_notice"}}]
     end
@@ -98,8 +88,8 @@ class Whitehall::DocumentSearch
 
   def announcement_search
     @results ||= Tire.search Whitehall.government_search_index_name, load: {include: [:document, :organisations]} do |search|
-      keyword_search(search)
       filter_by_announcement_type(search)
+      keyword_search(search)
       filter_topics(search)
       filter_organisations(search)
       filter_by_people(search)
@@ -110,8 +100,8 @@ class Whitehall::DocumentSearch
 
   def publication_search
     @results ||= Tire.search Whitehall.government_search_index_name, load: {include: [:document, :organisations, :attachments, response: :attachments]} do |search|
-      keyword_search(search)
       filter_by_publication_type(search)
+      keyword_search(search)
       filter_topics(search)
       filter_organisations(search)
       filter_date_and_sort(search)
@@ -121,8 +111,8 @@ class Whitehall::DocumentSearch
 
   def policy_search
     @results ||= Tire.search Whitehall.government_search_index_name, load: {include: [:document, :organisations]} do |search|
+      search.filter :term, "policy"
       keyword_search(search)
-      filter_by_format(search, "policy")
       filter_topics(search)
       filter_organisations(search)
       filter_date_and_sort(search)
@@ -144,7 +134,8 @@ class Whitehall::DocumentSearch
   end
 
   def selected_announcement_type_option
-    Whitehall::AnnouncementFilterOption.find_by_slug(@params[:announcement_type_option])
+    filter_option = @params[:announcement_type_option] || @params[:announcement_type]
+    Whitehall::AnnouncementFilterOption.find_by_slug(filter_option)
   end
 
   def selected_people_option
