@@ -7,7 +7,7 @@ module Searchable
     :format, :boost_phrases, :description,
     :organisations, :public_timestamp,
     :people, :publication_type, :speech_type,
-    :topics, :news_article_type
+    :topics, :news_article_type, :display_type
   ]
 
   included do

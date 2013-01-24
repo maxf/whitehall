@@ -20,6 +20,14 @@
             </div>
         </div>
       </div>
+      <div id='consultation-types' class="filter">
+        <div class="filter-inner">
+            <div class="publication-type">
+              <%= label_tag "consultation_type_option", "Consultation type", class: "title" %>
+              <%= select_tag :consultation_type_option, consultation_type_filter_options(@filter.selected_consultation_type_option), class: "single-row-select" %>
+            </div>
+        </div>
+      </div>
       <% end %>
 
       <% if defined?(filter_by_announcement_type) && filter_by_announcement_type %>

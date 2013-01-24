@@ -52,10 +52,13 @@ class Whitehall::DocumentSearch
       publication_ids = selected_publication_filter_option.publication_types.map(&:id)
       if selected_publication_filter_option.edition_types.any?
         edition_types = selected_publication_filter_option.edition_types
-        format = edition_types.first.underscore #TODO: refactor you can pass multiple types
+        format = edition_types.first.underscore
         search.filter :or, [{term: {format: format}}, {term: {publication_type: publication_ids}}]
       else
         search.filter :term, publication_type: publication_ids
+      end
+      if selected_consultation_type_option
+        search.filter :term, display_type: selected_consultation_type_option
       end
     else
       search.filter :or, [{term: {format: "publication"}}, {term: {format: "statistical_data_set"}}, {term: {format: "consultation"}}]
@@ -136,6 +139,10 @@ class Whitehall::DocumentSearch
   def selected_announcement_type_option
     filter_option = @params[:announcement_type_option] || @params[:announcement_type]
     Whitehall::AnnouncementFilterOption.find_by_slug(filter_option)
+  end
+
+  def selected_consultation_type_option
+    @params[:consultation_type_option] unless @params[:consultation_type_option] == "all"
   end
 
   def selected_people_option
