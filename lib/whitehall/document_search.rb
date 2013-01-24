@@ -111,7 +111,7 @@ class Whitehall::DocumentSearch
 
   def policy_search
     @results ||= Tire.search Whitehall.government_search_index_name, load: {include: [:document, :organisations]} do |search|
-      search.filter :term, "policy"
+      search.filter :term, format: "policy"
       keyword_search(search)
       filter_topics(search)
       filter_organisations(search)

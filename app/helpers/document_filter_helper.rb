@@ -20,7 +20,7 @@ module DocumentFilterHelper
   end
 
   def people_filter_options(people, selected_person = nil)
-    selected_value = selected_person ? selected_person : ""
+    selected_value = selected_person ? selected_person : "all"
     options_for_select([["All ministers", "all"]] + people.map{ |a| [a.name, a.id] }, [selected_value])
   end
 
