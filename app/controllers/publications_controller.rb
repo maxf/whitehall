@@ -40,7 +40,7 @@ class PublicationsController < DocumentsController
 
     expire_on_next_scheduled_publication(scheduled_publications)
 
-    @es = params[:test]
+    @es = params[:test] || nil
     if @es == "es"
       search = Whitehall::DocumentSearch.new(params)
       @filter = PublicationesqueDecorator.new(search)

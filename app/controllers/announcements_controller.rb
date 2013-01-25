@@ -43,7 +43,7 @@ class AnnouncementsController < PublicFacingController
     clean_malformed_params_array(:topics)
     clean_malformed_params_array(:departments)
     expire_on_next_scheduled_publication(scheduled_announcements)
-    @es = params[:test]
+    @es = params[:test] || nil
     if @es == "es"
       search = Whitehall::DocumentSearch.new(params)
       @filter = AnnouncementDecorator.new(search)
