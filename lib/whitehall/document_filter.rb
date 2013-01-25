@@ -72,6 +72,10 @@ class Whitehall::DocumentFilter
     end
   end
 
+  def selected_people_option
+    #TODO
+  end
+
   def direction
     @params[:direction]
   end

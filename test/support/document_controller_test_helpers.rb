@@ -268,13 +268,16 @@ module DocumentControllerTestHelpers
     end
 
     def should_paginate(edition_type, options={})
+      include DocumentFilterHelpers
       options.reverse_merge!(timestamp_key: :first_published_at)
 
       test "index should only show a certain number of #{edition_type.to_s.pluralize} by default" do
         documents = (1..6).to_a.map { |i| create("published_#{edition_type}", title: "keyword-#{i}-index-default", options[:timestamp_key] => i.days.ago) }
         documents.sort_by!(&options[:sort_by]) if options[:sort_by]
 
-        get :index
+        with_number_of_documents_per_page(3) do
+          get :index
+        end
 
         (0..2).to_a.each { |i| assert_select_object(documents[i]) }
         (3..5).to_a.each { |i| refute_select_object(documents[i]) }
@@ -284,7 +287,9 @@ module DocumentControllerTestHelpers
         documents = (1..6).to_a.map { |i| create("published_#{edition_type}", title:   "keyword-#{i}-window-pagination", options[:timestamp_key] => i.days.ago) }
         documents.sort_by!(&options[:sort_by]) if options[:sort_by]
 
-        get :index, page: 2
+        with_number_of_documents_per_page(3) do
+          get :index, page: 2
+        end
 
         (0..2).to_a.each { |i| refute_select_object(documents[i]) }
         (3..5).to_a.each { |i| assert_select_object(documents[i]) }
@@ -293,7 +298,9 @@ module DocumentControllerTestHelpers
       test "show more button should not appear by default for #{edition_type}" do
         documents = (1..3).to_a.map { |i| create("published_#{edition_type}", title: "keyword-#{i}") }
 
-        get :index
+        with_number_of_documents_per_page(3) do
+          get :index
+        end
 
         refute_select "#show-more-documents"
       end
@@ -301,7 +308,9 @@ module DocumentControllerTestHelpers
       test "show more button should appear when there are more records for #{edition_type}" do
         documents = (1..4).to_a.map { |i| create("published_#{edition_type}", title: "keyword-#{i}") }
 
-        get :index
+        with_number_of_documents_per_page(3) do
+          get :index
+        end
 
         assert_select "#show-more-documents"
       end
@@ -309,7 +318,9 @@ module DocumentControllerTestHelpers
       test "infinite pagination link should appear when there are more records for #{edition_type}" do
         documents = (1..4).to_a.map { |i| create("published_#{edition_type}", title: "keyword-#{i}") }
 
-        get :index
+        with_number_of_documents_per_page(3) do
+          get :index
+        end
 
         assert_select "link[rel='next'][type='application/json']"
       end
@@ -317,7 +328,9 @@ module DocumentControllerTestHelpers
       test "should show previous page link when not on the first page for #{edition_type}" do
         documents = (1..4).to_a.map { |i| create("published_#{edition_type}", title: "keyword-#{i}") }
 
-        get :index, page: 2
+        with_number_of_documents_per_page(3) do
+          get :index, page: 2
+        end
 
         assert_select "#show-more-documents" do
           assert_select ".previous"
@@ -328,7 +341,9 @@ module DocumentControllerTestHelpers
       test "should show progress helpers in pagination links for #{edition_type}" do
         documents = (1..7).to_a.map { |i| create("published_#{edition_type}", title: "keyword-#{i}") }
 
-        get :index, page: 2
+        with_number_of_documents_per_page(3) do
+          get :index, page: 2
+        end
 
         assert_select "#show-more-documents" do
           assert_select ".previous span", text: "1 of 3"
@@ -339,14 +354,15 @@ module DocumentControllerTestHelpers
       test "should preserve query params in next pagination link for #{edition_type}" do
         documents = (1..4).to_a.map { |i| create("published_#{edition_type}", title: "keyword-#{i}") }
 
-        get :index, keywords: 'keyword'
-
+        with_number_of_documents_per_page(3) do
+          get :index, keywords: 'keyword'
+        end
         assert_select "link[rel=next][type='application/json'][href*='keywords=keyword']"
       end
     end
 
     def should_return_json_suitable_for_the_document_filter(document_type)
-
+      include DocumentFilterHelpers
       test "index requested as JSON includes a count of #{document_type}" do
         create(:"published_#{document_type}")
 
@@ -358,7 +374,9 @@ module DocumentControllerTestHelpers
       test "index requested as JSON includes the total pages of #{document_type}" do
         4.times { create(:"published_#{document_type}") }
 
-        get :index, format: :json
+        with_number_of_documents_per_page(3) do
+          get :index, format: :json
+        end
 
         assert_equal 2, ActiveSupport::JSON.decode(response.body)["total_pages"]
       end

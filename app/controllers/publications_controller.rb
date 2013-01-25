@@ -1,4 +1,9 @@
 class PublicationsController < DocumentsController
+  class OldPublicationesqueDecorator < SimpleDelegator
+    def documents
+      PublicationesquePresenter.decorate(__getobj__.documents)
+    end
+  end
   class PublicationesqueDecorator < SimpleDelegator
     def search
       __getobj__.publication_search.results
@@ -34,8 +39,15 @@ class PublicationsController < DocumentsController
     clean_malformed_params_array(:departments)
 
     expire_on_next_scheduled_publication(scheduled_publications)
-    search = Whitehall::DocumentSearch.new(params)
-    @filter = PublicationesqueDecorator.new(search)
+
+    @es = params[:test]
+    if @es == "es"
+      search = Whitehall::DocumentSearch.new(params)
+      @filter = PublicationesqueDecorator.new(search)
+    else
+      document_filter = Whitehall::DocumentFilter.new(all_publications, params)
+      @filter = OldPublicationesqueDecorator.new(document_filter)
+    end
 
     respond_to do |format|
       format.html
@@ -43,9 +55,9 @@ class PublicationsController < DocumentsController
         render json: PublicationFilterJsonPresenter.new(@filter)
       end
       format.atom do
-        # TODO fix atom feed
-        # @publications = @filter.documents.sort_by(&:public_timestamp).reverse
-        @publications = @filter.documents
+        @publications = @filter.documents.sort_by(&:public_timestamp).reverse
+        # TODO fix atom feed in ES
+        # @publications = @filter.documents
       end
     end
   end
@@ -57,8 +69,14 @@ class PublicationsController < DocumentsController
 
 private
 
+  def all_publications
+    Publicationesque.published.includes(:document, :organisations, :attachments, response: :attachments)
+  end
+
   def scheduled_publications
-    @scheduled_publications = Publicationesque.scheduled.order("scheduled_publication asc")
+    unfiltered = Publicationesque.scheduled.order("scheduled_publication asc")
+    Whitehall::DocumentFilter.new(unfiltered, params.except(:direction)).documents
+    # @scheduled_publications = Publicationesque.scheduled.order("scheduled_publication asc")
   end
 
   def document_class

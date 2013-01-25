@@ -40,9 +40,13 @@ class PoliciesController < DocumentsController
 
     clean_malformed_params_array(:topics)
     clean_malformed_params_array(:departments)
-
-    search = Whitehall::DocumentSearch.new(params)
-    @filter = PoliciesDecorator.new(search)
+    @es = params[:test] || nil
+    if @es == "es"
+      search = Whitehall::DocumentSearch.new(params)
+      @filter = PoliciesDecorator.new(search)
+    else
+      @filter = Whitehall::DocumentFilter.new(policies, params)
+    end
     respond_with PolicyFilterJsonPresenter.new(@filter)
   end
 
@@ -65,8 +69,13 @@ class PoliciesController < DocumentsController
   end
 
   private
+
   def document_class
     Policy
+  end
+
+  def policies
+    Policy.published.includes(:document)
   end
 
   def analytics_format

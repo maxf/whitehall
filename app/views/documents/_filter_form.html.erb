@@ -1,6 +1,7 @@
 <div class="filter-block">
   <h2>You can use the filters to show only results that match your interests</h2>
   <form method="get" action="<%= send(:"#{document_type.to_s.pluralize}_path") %>" id="document-filter" class="js-document-filter">
+    <%= hidden_field_tag :test, @es %>
     <fieldset>
       <legend class="visuallyhidden">Filter <%= document_type.to_s.pluralize %></legend>
 
@@ -20,14 +21,14 @@
             </div>
         </div>
       </div>
-      <div id='consultation-types' class="filter">
+<!--       <div id='consultation-types' class="filter">
         <div class="filter-inner">
             <div class="publication-type">
-              <%= label_tag "consultation_type_option", "Consultation type", class: "title" %>
-              <%= select_tag :consultation_type_option, consultation_type_filter_options(@filter.selected_consultation_type_option), class: "single-row-select" %>
+              <%# label_tag "consultation_type_option", "Consultation type", class: "title" %>
+              <%# select_tag :consultation_type_option, consultation_type_filter_options(@filter.selected_consultation_type_option), class: "single-row-select" %>
             </div>
         </div>
-      </div>
+      </div> -->
       <% end %>
 
       <% if defined?(filter_by_announcement_type) && filter_by_announcement_type %>
@@ -39,17 +40,6 @@
             </div>
           </div>
         </div>
-      <% end %>
-
-      <% if defined?(filter_by_people) && filter_by_people %>
-        <div class="filter">
-          <div class="filter-inner">
-            <div>
-              <%= label_tag "people_id", "By minister", class: "title" %>
-              <%= select_tag :people_id, people_filter_options(Person.all, @filter.selected_people_option), size: 5, multiple: true, class: 'multi-row-select'  %>
-            </div>
-        </div>
-      </div>
       <% end %>
 
       <div class="filter">
@@ -64,6 +54,17 @@
           <%= select_tag :departments, organisation_filter_options(all_organisations_with(document_type), @filter.selected_organisations), size: 5, multiple: true, class: "multi-row-select" %>
         </div>
       </div>
+
+      <% if defined?(filter_by_people) && filter_by_people && @es %>
+        <div class="filter">
+          <div class="filter-inner">
+            <div>
+              <%= label_tag "people_id", "By minister", class: "title" %>
+              <%= select_tag :people_id, people_filter_options(Person.all, @filter.selected_people_option), size: 5, multiple: true, class: 'multi-row-select'  %>
+            </div>
+          </div>
+        </div>
+      <% end %>
 
       <div class="filter">
         <div class="filter-inner">
