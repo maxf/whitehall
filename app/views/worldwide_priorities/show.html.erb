@@ -28,8 +28,8 @@
     <div class="inner-block">
       <div class="document body">
         <%= govspeak_to_html @document.body, @document.images %>
-        <% if @document.case_studies.any? %>
-          <%= render partial: "case_studies/case_studies", locals: {document: @document} %>
+        <% if @document.published_case_studies.any? %>
+          <%= render partial: "case_studies/case_studies", locals: {document: @document}, collection: {case_studies: @document.published_case_studies} %>
         <% end %>
       </div>
     </div>
