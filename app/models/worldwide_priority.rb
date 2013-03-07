@@ -14,6 +14,11 @@ class WorldwidePriority < Edition
     conditions: { editions: { type: WorldLocationNewsArticle.sti_names, state: "published" } },
     source: :edition
 
+  has_many :published_case_studies,
+    through: :edition_worldwide_priorities,
+    conditions: { type: 'CaseStudy', state: "published" },
+    source: :edition
+
   def display_type_key
     "worldwide_priority"
   end
