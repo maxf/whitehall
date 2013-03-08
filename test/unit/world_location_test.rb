@@ -101,6 +101,23 @@ class WorldLocationTest < ActiveSupport::TestCase
     assert_equal [ [country_type, [location_3, location_2]] , [territory_type, [location_1]] ], WorldLocation.all_by_type
   end
 
+  test '#featured_editions includes the newly published version of a featured edition, but not the original' do
+    world_location = create(:world_location)
+    old_version = create(:published_edition, title: "Gamma")
+    create(:featured_edition_world_location, world_location: world_location, edition: old_version, ordering: 0)
+
+    old_version.edition_world_locations.reload
+
+    editor = create(:departmental_editor)
+    new_version = old_version.create_draft(editor)
+    new_version.change_note = 'New stuffs!'
+    new_version.save
+    new_version.publish_as(editor, force: true)
+
+    refute world_location.featured_edition_world_locations.include?(old_version)
+    assert world_location.featured_edition_world_locations.include?(new_version)
+  end
+
   test '#featured_edition_world_locations should return editions featured against this world_location' do
     world_location = create(:world_location)
     other_world_location = create(:world_location)
