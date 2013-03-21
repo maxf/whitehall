@@ -31,4 +31,7 @@ class HomeController < PublicFacingController
   def history
   end
 
+  def history_king_charles_street
+  end
+
 end
