@@ -34,4 +34,7 @@ class HomeController < PublicFacingController
   def history_king_charles_street
   end
 
+  def history_lancaster_house
+  end
+
 end
