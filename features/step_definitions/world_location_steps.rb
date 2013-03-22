@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 def add_translation_to_world_location(location, translation)
   translation = translation.stringify_keys
   visit admin_world_location_path(location)
@@ -47,18 +49,23 @@ When /^I visit the world locations page$/ do
   visit world_locations_path
 end
 
-When /^I feature the news article "([^"]*)" for (?:country|overseas territory|international delegation) "([^"]*)"(?: with image "([^"]*)")?$/ do |news_article_title, world_location_name, image_filename|
+def feature_news_article_in_world_location(news_article_title, world_location_name, image_filename = nil, locale = "English")
   image_filename ||= 'minister-of-funk.960x640.jpg'
   world_location = WorldLocation.find_by_name!(world_location_name)
   visit admin_world_location_path(world_location)
-  click_link "Features (English)"
-  news_article = NewsArticle.find_by_title(news_article_title)
+  click_link "Features (#{locale})"
+  locale = Locale.find_by_language_name(locale)
+  news_article = LocalisedModel.new(NewsArticle, locale.code).find_by_title(news_article_title)
   within record_css_selector(news_article) do
     click_link "Feature"
   end
   attach_file "Select an image to be shown when featuring", Rails.root.join("test/fixtures/#{image_filename}")
   fill_in :alt_text, with: "An accessible description of the image"
   click_button "Save"
+end
+
+When /^I feature the news article "([^"]*)" for (?:country|overseas territory|international delegation) "([^"]*)"(?: with image "([^"]*)")?$/ do |news_article_title, world_location_name, image_filename|
+  feature_news_article_in_world_location(news_article_title, world_location_name, image_filename)
 end
 
 When /^I order the featured items of the (?:country|overseas territory|international delegation) "([^"]*)" to:$/ do |name, table|
@@ -128,11 +135,15 @@ Then /^I should see that it is an? (country|overseas territory|international del
   assert has_css?('.type', text: world_location_type.capitalize)
 end
 
-Then /^when viewing the (?:country|overseas territory|international delegation) "([^"]*)" with the locale "([^"]*)" I should see:$/ do |name, locale, table|
-  world_location = WorldLocation.find_by_name!(name)
-  translation = table.rows_hash
+def view_world_location_in_locale(world_location_name, locale)
+  world_location = WorldLocation.find_by_name!(world_location_name)
   visit world_location_path(world_location)
   click_link locale
+end
+
+Then /^when viewing the (?:country|overseas territory|international delegation) "([^"]*)" with the locale "([^"]*)" I should see:$/ do |world_location_name, locale, table|
+  view_world_location_in_locale(world_location_name, locale)
+  translation = table.rows_hash
   assert page.has_css?('.title', text: translation["title"]), "Title wasn't present"
   assert page.has_css?('.mission_statement', text: translation["mission_statement"]), "Mission statement wasn't present"
 end
@@ -148,4 +159,41 @@ When /^I click through to see all the announcements for (?:country|overseas terr
   within '#announcements' do
     click_link 'See all'
   end
+end
+
+Given /^an english news article called "([^"]*)" related to the overseas territory$/ do |title|
+  world_location = WorldLocation.last
+  create(:published_news_article, title: title, world_locations: [world_location])
+end
+
+When /^I feature "([^"]*)" on the english "([^"]*)" page$/ do |title, overseas_territory_name|
+  feature_news_article_in_world_location(title, overseas_territory_name)
+end
+
+Then /^I should see no featured items on the french version of the "([^"]*)" page$/ do |world_location_name|
+  view_world_location_in_locale(world_location_name, "Français")
+  assert page.has_no_css?('.feature'), "Feature was unexpectedly present"
+end
+
+Given /^an overseas territory "([^"]*)" exists in both english and french$/ do |name|
+  location = create(:overseas_territory, name: name)
+  add_translation_to_world_location(location, locale: "French", name: 'Unimportant', mission_statement: 'Unimportant')
+end
+
+Given /^there is a news article "([^"]*)" in english \("([^"]*)" in french\) related to the overseas territory$/ do |english_title, french_title|
+  world_location = WorldLocation.last
+  create(:published_news_article, title: english_title, world_locations: [world_location], translated_into: {
+    fr: {
+      title: french_title
+    }
+  })
+end
+
+When /^I feature "([^"]*)" on the french "([^"]*)" page$/ do |news_article_title, world_location_name|
+  feature_news_article_in_world_location(news_article_title, world_location_name, nil, "Français")
+end
+
+Then /^I should see "([^"]*)" as the title of the feature on the french "([^"]*)" page$/ do |expected_title, world_location_name|
+  view_world_location_in_locale(world_location_name, "Français")
+  assert page.has_css?('.feature h2', text: expected_title)
 end
